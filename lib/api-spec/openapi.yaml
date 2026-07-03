@@ -1,0 +1,613 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Medlar - AI Chat Assistant for Modern Dating
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: analyze
+    description: AI chat analysis operations
+  - name: Auth
+    description: Browser authentication endpoints
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /auth/user:
+    get:
+      tags: [Auth]
+      operationId: getCurrentAuthUser
+      summary: Get the currently authenticated user
+      parameters:
+        - $ref: "#/components/parameters/AuthorizationSessionHeader"
+        - $ref: "#/components/parameters/SessionCookie"
+      responses:
+        "200":
+          description: Auth status resolved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUserEnvelope"
+
+  /login:
+    get:
+      tags: [Auth]
+      operationId: beginBrowserLogin
+      summary: Start the browser OIDC login flow
+      parameters:
+        - name: returnTo
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Redirect to the OIDC authorization endpoint.
+
+  /callback:
+    get:
+      tags: [Auth]
+      operationId: handleBrowserLoginCallback
+      summary: Complete the browser OIDC login flow
+      parameters:
+        - name: code
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Redirect after login.
+
+  /logout:
+    get:
+      tags: [Auth]
+      operationId: logoutBrowserSession
+      summary: Clear the session
+      responses:
+        "302":
+          description: Redirect to OIDC logout.
+
+  /analyze/quick:
+    post:
+      operationId: getQuickAnalysis
+      tags: [analyze]
+      summary: Get combined quick analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatInput"
+      responses:
+        "200":
+          description: Quick analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuickAnalysis"
+
+  /analyze/replies:
+    post:
+      operationId: getSuggestedReplies
+      tags: [analyze]
+      summary: Get reply suggestions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RepliesInput"
+      responses:
+        "200":
+          description: Reply suggestions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReplySuggestions"
+
+  /analyze/mood:
+    post:
+      operationId: detectMood
+      tags: [analyze]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatInput"
+      responses:
+        "200":
+          description: Mood analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MoodAnalysis"
+
+  /analyze/flags:
+    post:
+      operationId: scanFlags
+      tags: [analyze]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatInput"
+      responses:
+        "200":
+          description: Flag scan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FlagScan"
+
+  /analyze/rate:
+    post:
+      operationId: rateConversation
+      tags: [analyze]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatInput"
+      responses:
+        "200":
+          description: Conversation rating
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationRating"
+
+  /analyze/damage-control:
+    post:
+      operationId: checkDamageControl
+      tags: [analyze]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatInput"
+      responses:
+        "200":
+          description: Damage control result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DamageControlResult"
+
+  /analyze/next-move:
+    post:
+      operationId: getNextMove
+      tags: [analyze]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatInput"
+      responses:
+        "200":
+          description: Next move suggestions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NextMoveSuggestions"
+
+  /analyze/predict:
+    post:
+      operationId: getPrediction
+      tags: [analyze]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatInput"
+      responses:
+        "200":
+          description: Prediction result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PredictionResult"
+
+  /analyze/chat:
+    post:
+      operationId: chatWithMedlar
+      tags: [analyze]
+      summary: Chat with Medlar AI assistant (full response)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MedlarChatInput"
+      responses:
+        "200":
+          description: Medlar response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MedlarChatResponse"
+
+  /analyze/image-ocr:
+    post:
+      operationId: extractTextFromImage
+      tags: [analyze]
+      summary: Extract chat text from screenshot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImageOcrInput"
+      responses:
+        "200":
+          description: Extracted text
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImageOcrResult"
+
+components:
+  parameters:
+    AuthorizationSessionHeader:
+      name: Authorization
+      in: header
+      required: false
+      schema:
+        type: string
+    SessionCookie:
+      name: sid
+      in: cookie
+      required: false
+      schema:
+        type: string
+
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    AuthUser:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+        email:
+          type: ["string", "null"]
+        firstName:
+          type: ["string", "null"]
+        lastName:
+          type: ["string", "null"]
+        profileImageUrl:
+          type: ["string", "null"]
+
+    AuthUserEnvelope:
+      type: object
+      required: [isAuthenticated]
+      properties:
+        isAuthenticated:
+          type: boolean
+        user:
+          oneOf:
+            - $ref: "#/components/schemas/AuthUser"
+            - type: "null"
+
+    ChatInput:
+      type: object
+      required: [chatText, relationshipContext]
+      properties:
+        chatText:
+          type: string
+          minLength: 1
+        relationshipContext:
+          type: string
+          enum: [one_sided, already_dating, mutual_crush, ex]
+        yourName:
+          type: ["string", "null"]
+        backstory:
+          type: ["string", "null"]
+          description: Optional context about who this person is and what this situation is about
+
+    RepliesInput:
+      type: object
+      required: [chatText, relationshipContext]
+      properties:
+        chatText:
+          type: string
+          minLength: 1
+        relationshipContext:
+          type: string
+          enum: [one_sided, already_dating, mutual_crush, ex]
+        yourName:
+          type: ["string", "null"]
+        backstory:
+          type: ["string", "null"]
+        vibeMode:
+          type: ["string", "null"]
+          enum: [classic, delulu, ice_queen, therapist, savage, null]
+
+    KeyPoint:
+      type: object
+      required: [text, type]
+      properties:
+        text:
+          type: string
+        type:
+          type: string
+          enum: [positive, negative, neutral, warning]
+
+    QuickAnalysis:
+      type: object
+      required:
+        - moodSummary
+        - moodEmoji
+        - keyPoints
+        - attractionScore
+        - effortScore
+        - riskLevel
+        - riskLabel
+        - personVibe
+        - personVibeLabel
+        - personVibeEmoji
+        - prediction
+        - predictionChance
+        - topFlags
+      properties:
+        moodSummary:
+          type: string
+        moodEmoji:
+          type: string
+        keyPoints:
+          type: array
+          items:
+            $ref: "#/components/schemas/KeyPoint"
+        attractionScore:
+          type: integer
+        effortScore:
+          type: integer
+        riskLevel:
+          type: string
+          enum: [low, medium, high]
+        riskLabel:
+          type: string
+        personVibe:
+          type: string
+          enum: [mature, cool, flirty, showing_off, dry, mysterious, clingy, emotionally_unavailable, enthusiastic, chill]
+        personVibeLabel:
+          type: string
+        personVibeEmoji:
+          type: string
+        prediction:
+          type: string
+        predictionChance:
+          type: integer
+        safetyWarning:
+          type: ["string", "null"]
+        topFlags:
+          type: array
+          items:
+            $ref: "#/components/schemas/Flag"
+
+    Reply:
+      type: object
+      required: [tone, text, explanation]
+      properties:
+        tone:
+          type: string
+          enum: [flirty, chill, funny, confident, delulu, ice_queen, therapist, savage]
+        toneLabel:
+          type: string
+        toneEmoji:
+          type: string
+        text:
+          type: string
+        explanation:
+          type: string
+
+    ReplySuggestions:
+      type: object
+      required: [replies]
+      properties:
+        replies:
+          type: array
+          items:
+            $ref: "#/components/schemas/Reply"
+
+    MoodAnalysis:
+      type: object
+      required: [mood, moodLabel, moodEmoji, summary, confidence]
+      properties:
+        mood:
+          type: string
+          enum: [interested, dry, confused, excited, mixed, distant]
+        moodLabel:
+          type: string
+        moodEmoji:
+          type: string
+        summary:
+          type: string
+        confidence:
+          type: integer
+        signals:
+          type: array
+          items:
+            type: string
+
+    Flag:
+      type: object
+      required: [type, text, explanation]
+      properties:
+        type:
+          type: string
+          enum: [red, green, yellow]
+        text:
+          type: string
+        explanation:
+          type: string
+
+    FlagScan:
+      type: object
+      required: [flags, overallVerdict]
+      properties:
+        flags:
+          type: array
+          items:
+            $ref: "#/components/schemas/Flag"
+        overallVerdict:
+          type: string
+
+    ConversationRating:
+      type: object
+      required: [score, label, summary, tips]
+      properties:
+        score:
+          type: number
+        label:
+          type: string
+        summary:
+          type: string
+        tips:
+          type: array
+          items:
+            type: string
+
+    DamageControlResult:
+      type: object
+      required: [status, statusLabel, statusEmoji, verdict, advice]
+      properties:
+        status:
+          type: string
+          enum: [worked, risky, damage_control]
+        statusLabel:
+          type: string
+        statusEmoji:
+          type: string
+        verdict:
+          type: string
+        advice:
+          type: string
+
+    NextMoveSuggestions:
+      type: object
+      required: [suggestions, context]
+      properties:
+        suggestions:
+          type: array
+          items:
+            type: string
+        context:
+          type: string
+
+    PredictionOutcome:
+      type: object
+      required: [scenario, chance, label]
+      properties:
+        scenario:
+          type: string
+        chance:
+          type: integer
+        label:
+          type: string
+
+    PredictionResult:
+      type: object
+      required: [positiveChance, prediction, outcomes, patternInsight]
+      properties:
+        positiveChance:
+          type: integer
+        prediction:
+          type: string
+        outcomes:
+          type: array
+          items:
+            $ref: "#/components/schemas/PredictionOutcome"
+        patternInsight:
+          type: string
+
+    MedlarChatMessage:
+      type: object
+      required: [role, content]
+      properties:
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+
+    MedlarChatInput:
+      type: object
+      required: [messages]
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/MedlarChatMessage"
+        chatContext:
+          type: object
+          nullable: true
+          properties:
+            chatText:
+              type: string
+            relationshipContext:
+              type: string
+            backstory:
+              type: ["string", "null"]
+
+    MedlarChatResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+
+    ImageOcrInput:
+      type: object
+      required: [images]
+      properties:
+        images:
+          type: array
+          items:
+            type: object
+            required: [imageBase64, mimeType]
+            properties:
+              imageBase64:
+                type: string
+              mimeType:
+                type: string
+                enum: [image/jpeg, image/png, image/webp, image/gif]
+
+    ImageOcrResult:
+      type: object
+      required: [extractedText]
+      properties:
+        extractedText:
+          type: string
