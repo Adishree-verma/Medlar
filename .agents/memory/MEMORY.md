@@ -1,0 +1,4 @@
+- [Port conflict fix](port-conflict.md) — `localPort` in artifact.toml determines the PORT env var the workflow system passes; changing it fixes port conflicts between workflows.
+- [Auth route response](auth-route-fix.md) — `GetCurrentAuthUserResponse` requires both `isAuthenticated` (bool) AND `user` fields; passing only `user` causes a ZodError.
+- [Replit auth mobile removal](auth-mobile-removal.md) — auth.ts template includes mobile-auth routes that import Zod types not in the spec unless mobile endpoints are added; remove or skip mobile routes for web-only apps.
+- [replit-auth-web composite lib](replit-auth-web-setup.md) — lib/replit-auth-web tsconfig needs `composite/declarationMap/emitDeclarationOnly`; `import.meta.env` cannot be used in composite libs (Vite types not available).
